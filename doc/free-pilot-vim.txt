@@ -1,0 +1,171 @@
+*freepilot.txt*  AI code completion for Vim/Neovim             *freepilot*
+
+===============================================================================
+CONTENTS                                                    *freepilot-contents*
+
+    1. Introduction .................... |freepilot-introduction|
+    2. Installation .................... |freepilot-installation|
+    3. Configuration ................... |freepilot-configuration|
+    4. Usage ........................... |freepilot-usage|
+    5. Commands ........................ |freepilot-commands|
+    6. Troubleshooting ................. |freepilot-troubleshooting|
+
+===============================================================================
+1. Introduction                                         *freepilot-introduction*
+
+FreePilot is an AI code completion plugin that provides functionality similar to
+GitHub Copilot, but with the flexibility to use either free local models via
+Ollama or pay-as-you-go cloud services via OpenRouter.
+
+===============================================================================
+2. Installation                                         *freepilot-installation*
+
+Prerequisites:~
+
+For local completion (Ollama):
+1. Install Ollama from https://ollama.ai
+2. Pull a coding model: >
+    ollama pull codellama:13b
+<
+For cloud completion (OpenRouter):
+1. Create an account at https://openrouter.ai
+2. Get your API key
+
+Using vim-plug: >
+    Plug 'whatever555/free-pilot-vim'
+<
+Using Vundle: >
+    Plugin 'whatever555/free-pilot-vim'
+<
+Using packer.nvim: >
+    use 'whatever555/free-pilot-vim'
+<
+
+===============================================================================
+3. Configuration                                     *freepilot-configuration*
+
+                                                    *g:free_pilot_backend*
+g:free_pilot_backend
+    Choose the completion backend
+    Default: 'ollama'
+    Options: 'ollama' or 'openrouter'
+
+                                                    *g:free_pilot_debounce_delay*
+g:free_pilot_debounce_delay
+    Delay before triggering completion (milliseconds)
+    Default: 500
+
+                                                    *g:free_pilot_max_suggestions*
+g:free_pilot_max_suggestions
+    Maximum number of suggestions to show
+    Default: 3
+
+                                                    *g:free_pilot_temperature*
+g:free_pilot_temperature
+    AI creativity level (0.0 - 1.0)
+    Default: 0.1
+
+                                                    *g:free_pilot_max_tokens*
+g:free_pilot_max_tokens
+    Maximum length of completion
+    Default: 120
+
+                                                    *g:free_pilot_debug*
+g:free_pilot_debug
+    Enable debug mode
+    Default: 0
+
+                                                    *g:free_pilot_log_file*
+g:free_pilot_log_file
+    Path to debug log file
+    Default: '' (disabled)
+
+Ollama Settings:~
+                                                    *g:free_pilot_ollama_model*
+g:free_pilot_ollama_model
+    Model to use with Ollama
+    Default: 'codellama:13b'
+
+                                                    *g:free_pilot_ollama_url*
+g:free_pilot_ollama_url
+    Ollama API endpoint
+    Default: 'http://localhost:11434/api/generate'
+
+OpenRouter Settings:~
+                                                    *g:free_pilot_openrouter_api_key*
+g:free_pilot_openrouter_api_key
+    Your OpenRouter API key
+    Default: ''
+
+                                                    *g:free_pilot_openrouter_model*
+g:free_pilot_openrouter_model
+    OpenRouter model to use
+    Default: 'anthropic/claude-2:1'
+
+Behavior Settings:~
+                                                    *g:free_pilot_autostart*
+g:free_pilot_autostart
+    Enable completion on startup
+    Default: 1
+
+                                                    *g:free_pilot_include_filetypes*
+g:free_pilot_include_filetypes
+    List of filetypes to enable completion for
+    Default: [] (all filetypes)
+
+                                                    *g:free_pilot_exclude_filetypes*
+g:free_pilot_exclude_filetypes
+    List of filetypes to disable completion for
+    Default: ['help', 'netrw', 'NvimTree', 'TelescopePrompt', 'fugitive',
+             'gitcommit', 'quickfix', 'prompt']
+
+===============================================================================
+4. Usage                                                   *freepilot-usage*
+
+FreePilot will automatically provide suggestions as you type. To interact with
+suggestions:
+
+    <Tab>       Accept the current suggestion
+    <C-]>       Skip the current suggestion
+
+===============================================================================
+5. Commands                                               *freepilot-commands*
+
+                                                         *:FreePilotEnable*
+:FreePilotEnable
+    Enable FreePilot completion
+
+                                                         *:FreePilotDisable*
+:FreePilotDisable
+    Disable FreePilot completion
+
+                                                         *:FreePilotToggle*
+:FreePilotToggle
+    Toggle FreePilot completion on/off
+
+                                                         *:FreePilotStatus*
+:FreePilotStatus
+    Display current FreePilot status
+
+===============================================================================
+6. Troubleshooting                                 *freepilot-troubleshooting*
+
+Common Issues:~
+
+Q: Completion not showing up?
+A: - Check if Ollama is running (ollama ps)
+   - Verify OpenRouter API key
+   - Check :FreePilotStatus output
+
+Q: Slow completion?
+A: - Try a smaller model
+   - Check internet connection for OpenRouter
+   - Adjust g:free_pilot_debounce_delay
+
+Q: Wrong completions?
+A: - Try a different model
+   - Verify correct filetype detection
+   - Adjust g:free_pilot_temperature
+
+===============================================================================
+vim:ft=help:tw=78:ts=8:noet:fen:fdl=0:fdm=marker:
