@@ -157,6 +157,25 @@ function! s:EnsureResponseExists(request_id) abort
     endif
 endfunction
 
+" Check if job exists
+function! s:JobExists(job_id) abort
+    if has('nvim')
+        return jobwait([a:job_id], 0)[0] == -1
+    else
+        if has_key(s:jobs, a:job_id)
+            try
+                let l:job = s:jobs[a:job_id].job
+                let l:status = job_status(l:job)
+                return l:status == 'run'
+            catch
+                return 0
+            endtry
+        endif
+        return 0
+    endif
+endfunction
+
+
 " Execute async request with proper job handling
 function! s:ExecuteAsyncRequest(cmd, request_id, temp_file, backend, context) abort
     try
