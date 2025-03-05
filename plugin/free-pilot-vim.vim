@@ -200,24 +200,44 @@ function! s:ExecuteAsyncRequest(cmd, request_id, temp_file, backend, context) ab
             endif
             return l:job_id
         else
-            " Vim job handling
-            let l:options = {
-                \ 'out_cb': function('s:HandleVimJobOutput'),
-                \ 'err_cb': function('s:HandleVimJobOutput'),
-                \ 'exit_cb': function('s:HandleVimJobExit'),
+            " Vim job handling - fixed version
+            let l:options = {}
+            
+            " Set output callback
+            function! s:OutCallback(channel, msg) closure
+                call s:HandleVimJobOutput(a:channel, a:msg, 'stdout')
+            endfunction
+            let l:options['out_cb'] = function('s:OutCallback')
+            
+            " Set error callback
+            function! s:ErrCallback(channel, msg) closure
+                call s:HandleVimJobOutput(a:channel, a:msg, 'stderr')
+            endfunction
+            let l:options['err_cb'] = function('s:ErrCallback')
+            
+            " Set exit callback
+            function! s:ExitCallback(job, status) closure
+                let l:ctx = {'request_id': a:request_id, 'temp_file': a:temp_file, 'backend': a:backend, 'context': a:context}
+                call s:HandleVimJobExit(a:job, a:status, l:ctx)
+            endfunction
+            let l:options['exit_cb'] = function('s:ExitCallback')
+            
+            " Start the job with options
+            let l:job = job_start(a:cmd, l:options)
+            
+            " Get job ID for tracking
+            let l:job_id = ch_info(job_getchannel(l:job)).id
+            
+            " Store job and context for later reference
+            let s:jobs[l:job_id] = {
+                \ 'job': l:job,
                 \ 'request_id': a:request_id,
                 \ 'temp_file': a:temp_file,
                 \ 'backend': a:backend,
                 \ 'context': a:context,
                 \ 'chunks': []
                 \ }
-            
-            let l:job = job_start(a:cmd, l:options)
-            let l:job_id = job_info(l:job).process
-            let s:jobs[l:job_id] = {
-                \ 'job': l:job,
-                \ 'options': l:options
-                \ }
+                
             return l:job_id
         endif
     catch
@@ -286,46 +306,46 @@ endfunction
 
 
 " Vim job output handler
-function! s:HandleVimJobOutput(channel, msg) abort
+function! s:HandleVimJobOutput(channel, msg, type) abort
     try
         let l:job = ch_getjob(a:channel)
-        let l:job_id = job_info(l:job).process
+        let l:job_id = ch_info(a:channel).id
         
         if has_key(s:jobs, l:job_id)
-            let l:job_data = s:jobs[l:job_id]
-            call add(l:job_data.options.chunks, a:msg)
+            call add(s:jobs[l:job_id].chunks, a:msg)
         endif
     catch
         call s:Debug("Error in HandleVimJobOutput: " . v:exception)
     endtry
 endfunction
 
-" Vim job exit handler
-function! s:HandleVimJobExit(job, status) abort
+" Vim job exit handler (updated)
+function! s:HandleVimJobExit(job, status, ctx) abort
     try
-        let l:job_id = job_info(a:job).process
+        let l:channel = job_getchannel(a:job)
+        let l:job_id = ch_info(l:channel).id
+        
+        call s:Debug("Job for request #" . a:ctx.request_id . " exited with status " . a:status)
+        
         if has_key(s:jobs, l:job_id)
-            let l:job_data = s:jobs[l:job_id]
-            let l:response = join(l:job_data.options.chunks, "\n")
+            let l:response = join(s:jobs[l:job_id].chunks, "\n")
             
-            if l:job_data.options.request_id == s:current_request_id
-                let l:context = l:job_data.options.context
-                if l:job_data.options.backend == 'ollama'
-                    call s:ProcessOllamaResponse(l:response, l:context)
-                elseif l:job_data.options.backend == 'openrouter'
-                    call s:ProcessOpenRouterResponse(l:response, l:context)
+            if a:ctx.request_id == s:current_request_id
+                if a:ctx.backend == 'ollama'
+                    call s:ProcessOllamaResponse(l:response, a:ctx.context)
+                elseif a:ctx.backend == 'openrouter'
+                    call s:ProcessOpenRouterResponse(l:response, a:ctx.context)
                 endif
             endif
             
             " Cleanup
-            call s:CleanupJob(l:job_id)
+            call delete(a:ctx.temp_file)
+            call remove(s:jobs, l:job_id)
         endif
     catch
         call s:Debug("Error in HandleVimJobExit: " . v:exception)
     endtry
 endfunction
-
-
 
 " Cleanup helpers
 function! s:CleanupJob(job_id) abort
