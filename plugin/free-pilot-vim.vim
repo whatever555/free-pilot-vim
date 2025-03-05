@@ -1,5 +1,5 @@
 " FreePilot AI Code Completion Plugin for Vim/Neovim
-" Version: 1.0.2
+" Version: 1.0.3
 " Description: Async AI code completion with support for Ollama and OpenRouter
 " Maintainer: Eddie Murphy
 " License: MIT
@@ -440,13 +440,22 @@ endfunction
 function! s:GetFileContext()
     let l:cur_line_num = line('.')
     let l:cur_col = col('.')
-    let l:lines = getline(1, '$')
+    
+    " Calculate start and end lines for context
+    let l:start_line = max([1, l:cur_line_num - 24])
+    let l:end_line = min([line('$'), l:cur_line_num + 4])
+    
+    " Get the context lines
+    let l:lines = getline(l:start_line, l:end_line)
+    
+    " Calculate the index of current line within our context window
+    let l:cur_line_index = l:cur_line_num - l:start_line
     
     " Mark cursor position in current line
-    let l:cur_line = l:lines[l:cur_line_num - 1]
+    let l:cur_line = l:lines[l:cur_line_index]
     let l:before_cursor = strpart(l:cur_line, 0, l:cur_col - 1)
     let l:after_cursor = strpart(l:cur_line, l:cur_col - 1)
-    let l:lines[l:cur_line_num - 1] = l:before_cursor . '|CURSOR|' . l:after_cursor
+    let l:lines[l:cur_line_index] = l:before_cursor . '|CURSOR|' . l:after_cursor
     
     return {
         \ 'full_file': join(l:lines, "\n"),
