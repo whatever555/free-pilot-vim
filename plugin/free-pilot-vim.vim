@@ -25,7 +25,7 @@ let g:free_pilot_log_file = get(g:, 'free_pilot_log_file', '')
 let g:free_pilot_max_tokens = get(g:, 'free_pilot_max_tokens', 120)
 
 " Ollama specific settings
-let g:free_pilot_ollama_model = get(g:, 'free_pilot_ollama_model', 'codellama:13b')
+let g:free_pilot_ollama_model = get(g:, 'free_pilot_ollama_model', 'llama3.2:latest')
 let g:free_pilot_ollama_url = get(g:, 'free_pilot_ollama_url', 'http://localhost:11434/api/generate')
 
 " OpenRouter specific settings
