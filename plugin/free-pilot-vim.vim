@@ -1,5 +1,5 @@
 " FreePilot AI Code Completion Plugin for Vim/Neovim
-" Version: 1.0.1
+" Version: 1.0.2
 " Description: Async AI code completion with support for Ollama and OpenRouter
 " Maintainer: Eddie Murphy
 " License: MIT
