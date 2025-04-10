@@ -2,6 +2,10 @@
 
 A fast, lightweight, and configurable AI completion plugin that works with both local and cloud models. Get GitHub Copilot-like functionality for free or at a fraction of the cost! Built as an experiment to see what was possible with local ollama and remote openrouter AI models.
 
+
+FYI: If you are are looking for a coding assistant plugin, check out: https://github.com/whatever555/vim-code-checker    
+
+
 ## ✨ Features
 
 - 🚀 Real-time AI-powered code completion
